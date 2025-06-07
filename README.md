@@ -1,6 +1,10 @@
 
 # match three games
 
+this is just a demo
+
+use PhaserJs, and some AI help.
+
 
 # current UI
  
