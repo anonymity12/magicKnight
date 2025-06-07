@@ -3,17 +3,24 @@ import { ElementType } from '../../models/ElementType';
 
 export class Tile extends Phaser.GameObjects.Container {
     private element: ElementType;
-    private sprite: Phaser.GameObjects.Rectangle;
+    private sprite: Phaser.GameObjects.Image;
+    private selectionRect: Phaser.GameObjects.Rectangle;
     private isSelected: boolean = false;
 
     constructor(scene: Phaser.Scene, x: number, y: number, element: ElementType) {
         super(scene, x, y);
         this.element = element;
         
-        // Create a temporary rectangle as placeholder
-        // Later we'll replace this with proper sprites
-        this.sprite = scene.add.rectangle(0, 0, 55, 55, this.getColorForElement());
-        this.add(this.sprite);
+        // Create sprite from loaded image
+        this.sprite = scene.add.image(0, 0, this.getImageKeyForElement());
+        this.sprite.setDisplaySize(55, 55);
+        
+        // Create selection rectangle (invisible by default)
+        this.selectionRect = scene.add.rectangle(0, 0, 58, 58, 0xffffff, 0);
+        this.selectionRect.setStrokeStyle(3, 0xffffff);
+        
+        // Add both to container
+        this.add([this.selectionRect, this.sprite]);
         
         // Make interactive
         this.setSize(55, 55);
@@ -32,27 +39,23 @@ export class Tile extends Phaser.GameObjects.Container {
 
     public toggleSelected(): void {
         this.isSelected = !this.isSelected;
-        if (this.isSelected) {
-            this.sprite.setStrokeStyle(3, 0xffffff);
-        } else {
-            this.sprite.setStrokeStyle(0);
-        }
+        this.selectionRect.setAlpha(this.isSelected ? 1 : 0);
     }
 
-    private getColorForElement(): number {
+    private getImageKeyForElement(): string {
         switch (this.element) {
-            case ElementType.FIRE:
-                return 0xff0000;
             case ElementType.WATER:
-                return 0x0000ff;
+                return 'tile-blue';
             case ElementType.WOOD:
-                return 0x00ff00;
-            case ElementType.LIGHT:
-                return 0xffff00;
+                return 'tile-green';
             case ElementType.DARK:
-                return 0x800080;
+                return 'tile-purple';
+            case ElementType.FIRE:
+                return 'tile-red';
+            case ElementType.LIGHT:
+                return 'tile-yellow';
             default:
-                return 0xcccccc;
+                return 'tile-blue'; // 默认使用蓝色
         }
     }
 

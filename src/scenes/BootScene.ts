@@ -6,8 +6,12 @@ export class BootScene extends Phaser.Scene {
     }
 
     preload(): void {
-        // Here we'll load assets later
-        // this.load.image('logo', 'assets/logo.png');
+        // Load tile images
+        this.load.image('tile-blue', 'src/pictures/T_Block_Blue_AB_64.png');
+        this.load.image('tile-green', 'src/pictures/T_Block_Green_AB_64.png');
+        this.load.image('tile-purple', 'src/pictures/T_Block_Purple_AB_64.png');
+        this.load.image('tile-red', 'src/pictures/T_Block_Red_AB_128.png');
+        this.load.image('tile-yellow', 'src/pictures/T_Block_Yellow_AB_64.png');
     }
 
     create(): void {

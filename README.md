@@ -8,8 +8,9 @@ use PhaserJs, and some AI help.
 
 # current UI
  
+![alt text](/assets/image2.png)
 
-![alt text](/assets/image.png)
+0608 00:19 use some pictures from RZ assets
 
 # so, how to play?
 
