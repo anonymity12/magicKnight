@@ -39,25 +39,27 @@ export class GameScene extends Phaser.Scene {    private board: (Tile | null)[][
             for (let col = 0; col < this.BOARD_COLS; col++) {
                 const x = offsetX + col * this.TILE_SIZE + this.TILE_SIZE / 2;
                 const y = offsetY + row * this.TILE_SIZE + this.TILE_SIZE / 2;
-                
-                const tile = new Tile(this, x, y, this.getRandomElement());
-                tile.on('pointerdown', () => this.onTileClick(row, col));
+                  const tile = new Tile(this, x, y, this.getRandomElement());
+                tile.on('pointerdown', () => this.onTileClick(tile));
                 this.board[row][col] = tile;
             }
         }
-    }    
-    private onTileClick(row: number, col: number): void {
+    }      private onTileClick(tile: Tile): void {
         if (this.isProcessing) return;
 
-        const clickedTile = this.board[row][col];
-        if (!clickedTile) return;
+        // 获取点击方块的最新位置
+        const position = this.getTilePosition(tile);
+        if (position.row === -1 || position.col === -1) return;
 
         // 增加点击次数
         this.twoClickCounts++;
-        
         // 记录当前点击的方块信息
-        clickedTile.toggleSelected();
-        this.tilesClickedArray.push({ tile: clickedTile, row, col });
+        tile.setSelect();
+        this.tilesClickedArray.push({ 
+            tile: tile, 
+            row: position.row, 
+            col: position.col 
+        });
 
         // 如果是第二次点击
         if (this.twoClickCounts === 2) {
@@ -74,10 +76,9 @@ export class GameScene extends Phaser.Scene {    private board: (Tile | null)[][
                     { row: firstClick.row, col: firstClick.col },
                     { row: secondClick.row, col: secondClick.col }
                 );
-            } else {
-                // 不相邻则取消选中效果
-                firstClick.tile.toggleSelected();
-                secondClick.tile.toggleSelected();
+            } else {                // 不相邻则取消选中效果
+                firstClick.tile.clearSelect();
+                secondClick.tile.clearSelect();
             }
 
             // 重置状态
@@ -93,10 +94,11 @@ export class GameScene extends Phaser.Scene {    private board: (Tile | null)[][
     private async swapTiles(pos1: { row: number; col: number }, pos2: { row: number; col: number }): Promise<void> {
         this.isProcessing = true;
         const tile1 = this.board[pos1.row][pos1.col];
-        const tile2 = this.board[pos2.row][pos2.col];
-
+        const tile2 = this.board[pos2.row][pos2.col];        
         if (tile1 && tile2) {
-            tile1.toggleSelected();
+            tile1.clearSelect();
+            tile2.clearSelect();
+
             const tile1Pos = { x: tile1.x, y: tile1.y };
             const tile2Pos = { x: tile2.x, y: tile2.y };
 
@@ -123,11 +125,7 @@ export class GameScene extends Phaser.Scene {    private board: (Tile | null)[][
                 this.board[pos1.row][pos1.col] = tile1;
                 this.board[pos2.row][pos2.col] = tile2;
             }
-        }        // 取消两个方块的选中状态
-        if (tile1 && tile2) {
-            tile1.toggleSelected();
-            tile2.toggleSelected();
-        }
+        }       
         this.isProcessing = false;
     }
 
@@ -143,6 +141,7 @@ export class GameScene extends Phaser.Scene {    private board: (Tile | null)[][
         });
     }
 
+    // 获取方块在棋盘上的最新位置
     private getTilePosition(tile: Tile): { row: number; col: number } {
         for (let row = 0; row < this.BOARD_ROWS; row++) {
             for (let col = 0; col < this.BOARD_COLS; col++) {
@@ -291,9 +290,8 @@ export class GameScene extends Phaser.Scene {    private board: (Tile | null)[][
                 if (!this.board[row][col]) {
                     const x = offsetX + col * this.TILE_SIZE + this.TILE_SIZE / 2;
                     const y = offsetY + row * this.TILE_SIZE + this.TILE_SIZE / 2;
-                    
-                    const newTile = new Tile(this, x, y, this.getRandomElement());
-                    newTile.on('pointerdown', () => this.onTileClick(row, col));
+                      const newTile = new Tile(this, x, y, this.getRandomElement());
+                    newTile.on('pointerdown', () => this.onTileClick(newTile));
                     newTile.setAlpha(0);
                     
                     const fadeInPromise = new Promise<void>((resolve) => {

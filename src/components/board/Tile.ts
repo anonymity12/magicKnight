@@ -17,8 +17,8 @@ export class Tile extends Phaser.GameObjects.Container {
         this.sprite.setDisplaySize(55, 55);
         
         // Create selection rectangle (invisible by default)
-        this.selectionRect = scene.add.rectangle(0, 0, 58, 58, 0xffffff, 0);
-        this.selectionRect.setStrokeStyle(3, 0xffffff);
+        this.selectionRect = scene.add.rectangle(0, 0, 58, 58, 0xff0000, 0);
+        this.selectionRect.setStrokeStyle(1, 0x00ffff);
         
         // Create coordinates text (invisible by default)
         this.coordsText = scene.add.text(0, -30, '', {
@@ -43,20 +43,24 @@ export class Tile extends Phaser.GameObjects.Container {
     }
 
     private onPointerDown(): void {
-        this.toggleSelected();
+        if (this.isSelected) {
+            this.clearSelect();
+        } else {
+            this.setSelect();
+        }
     }
 
-    public toggleSelected(): void {
-        this.isSelected = !this.isSelected;
-        this.selectionRect.setAlpha(this.isSelected ? 1 : 0);
-        
-        // Update and show/hide coordinates text
-        if (this.isSelected) {
-            this.coordsText.setText(`x:${Math.round(this.x)}\ny:${Math.round(this.y)}`);
-            this.coordsText.setAlpha(1);
-        } else {
-            this.coordsText.setAlpha(0.5);
-        }
+    public setSelect(): void {
+        this.isSelected = true;
+        this.selectionRect.setAlpha(1);
+        this.coordsText.setText(`x:${Math.round(this.x)}\ny:${Math.round(this.y)}`);
+        this.coordsText.setAlpha(1);
+    }
+
+    public clearSelect(): void {
+        this.isSelected = false;
+        this.selectionRect.setAlpha(0.5);
+        this.coordsText.setAlpha(0.5);
     }
 
     private getImageKeyForElement(): string {
