@@ -45,7 +45,8 @@ export class GameScene extends Phaser.Scene {    private board: (Tile | null)[][
                 this.board[row][col] = tile;
             }
         }
-    }    private onTileClick(row: number, col: number): void {
+    }    
+    private onTileClick(row: number, col: number): void {
         if (this.isProcessing) return;
 
         const clickedTile = this.board[row][col];
