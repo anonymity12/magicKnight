@@ -206,13 +206,11 @@ export class GameScene extends Phaser.Scene {
         });
 
         // Wait for animations to complete
-        await new Promise(resolve => setTimeout(resolve, 250));
-
-        // Move tiles down
+        await new Promise(resolve => setTimeout(resolve, 250));        // Move tiles down
         await this.moveDownTiles();
 
         // Fill empty spaces
-        this.fillEmptySpaces();
+        await this.fillEmptySpaces();
 
         // Check for new matches
         const newMatches = this.findMatches();
@@ -259,9 +257,10 @@ export class GameScene extends Phaser.Scene {
         await Promise.all(moves);
     }
 
-    private fillEmptySpaces(): void {
+    private async fillEmptySpaces(): Promise<void> {
         const offsetX = (this.cameras.main.width - (this.BOARD_COLS * this.TILE_SIZE)) / 2;
         const offsetY = (this.cameras.main.height - (this.BOARD_ROWS * this.TILE_SIZE)) / 2;
+        const animations: Promise<void>[] = [];
 
         for (let col = 0; col < this.BOARD_COLS; col++) {
             for (let row = 0; row < this.BOARD_ROWS; row++) {
@@ -273,16 +272,22 @@ export class GameScene extends Phaser.Scene {
                     newTile.on('pointerdown', () => this.onTileClick(row, col));
                     newTile.setAlpha(0);
                     
-                    this.tweens.add({
-                        targets: newTile,
-                        alpha: 1,
-                        duration: 200
+                    const fadeInPromise = new Promise<void>((resolve) => {
+                        this.tweens.add({
+                            targets: newTile,
+                            alpha: 1,
+                            duration: 200,
+                            onComplete: () => resolve()
+                        });
                     });
                     
+                    animations.push(fadeInPromise);
                     this.board[row][col] = newTile;
                 }
             }
         }
+
+        await Promise.all(animations);
     }
 
     private getRandomElement(): ElementType {
