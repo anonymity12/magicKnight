@@ -5,6 +5,7 @@ export class Tile extends Phaser.GameObjects.Container {
     private element: ElementType;
     private sprite: Phaser.GameObjects.Image;
     private selectionRect: Phaser.GameObjects.Rectangle;
+    private coordsText: Phaser.GameObjects.Text;
     private isSelected: boolean = false;
 
     constructor(scene: Phaser.Scene, x: number, y: number, element: ElementType) {
@@ -19,8 +20,16 @@ export class Tile extends Phaser.GameObjects.Container {
         this.selectionRect = scene.add.rectangle(0, 0, 58, 58, 0xffffff, 0);
         this.selectionRect.setStrokeStyle(3, 0xffffff);
         
-        // Add both to container
-        this.add([this.selectionRect, this.sprite]);
+        // Create coordinates text (invisible by default)
+        this.coordsText = scene.add.text(0, -30, '', {
+            fontSize: '16px',
+            color: '#ffffff',
+            backgroundColor: '#000000'
+        }).setOrigin(0.5, 1);
+        this.coordsText.setAlpha(0);
+        
+        // Add all to container
+        this.add([this.selectionRect, this.sprite, this.coordsText]);
         
         // Make interactive
         this.setSize(55, 55);
@@ -40,6 +49,14 @@ export class Tile extends Phaser.GameObjects.Container {
     public toggleSelected(): void {
         this.isSelected = !this.isSelected;
         this.selectionRect.setAlpha(this.isSelected ? 1 : 0);
+        
+        // Update and show/hide coordinates text
+        if (this.isSelected) {
+            this.coordsText.setText(`x:${Math.round(this.x)}\ny:${Math.round(this.y)}`);
+            this.coordsText.setAlpha(1);
+        } else {
+            this.coordsText.setAlpha(0.5);
+        }
     }
 
     private getImageKeyForElement(): string {

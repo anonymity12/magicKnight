@@ -2,15 +2,17 @@ import 'phaser';
 import { ElementType } from '../models/ElementType';
 import { Tile } from '../components/board/Tile';
 
-export class GameScene extends Phaser.Scene {
-    private board: (Tile | null)[][] = [];
+export class GameScene extends Phaser.Scene {    private board: (Tile | null)[][] = [];
     private readonly BOARD_COLS = 5;
     private readonly BOARD_ROWS = 7;
     private readonly TILE_SIZE = 60;
-    private selectedTile: Tile | null = null;
     private score: number = 0;
     private scoreText: Phaser.GameObjects.Text | null = null;
     private isProcessing: boolean = false;
+    
+    // 新增的变量
+    private twoClickCounts: number = 0;
+    private tilesClickedArray: { tile: Tile; row: number; col: number }[] = [];
 
     constructor() {
         super({ key: 'GameScene' });
@@ -43,29 +45,48 @@ export class GameScene extends Phaser.Scene {
                 this.board[row][col] = tile;
             }
         }
-    }
-
-    private onTileClick(row: number, col: number): void {
+    }    private onTileClick(row: number, col: number): void {
         if (this.isProcessing) return;
 
         const clickedTile = this.board[row][col];
         if (!clickedTile) return;
 
-        if (this.selectedTile === null) {
-            this.selectedTile = clickedTile;
-            clickedTile.toggleSelected();
-        } else {
-            if (this.selectedTile === clickedTile) {
-                clickedTile.toggleSelected();
-                this.selectedTile = null;
-            } else if (this.areAdjacent(this.getTilePosition(this.selectedTile), { row, col })) {
-                this.swapTiles(this.getTilePosition(this.selectedTile), { row, col });
+        // 增加点击次数
+        this.twoClickCounts++;
+        
+        // 记录当前点击的方块信息
+        clickedTile.toggleSelected();
+        this.tilesClickedArray.push({ tile: clickedTile, row, col });
+
+        // 如果是第二次点击
+        if (this.twoClickCounts === 2) {
+            const firstClick = this.tilesClickedArray[0];
+            const secondClick = this.tilesClickedArray[1];
+
+            // 检查是否相邻
+            if (this.areAdjacent(
+                { row: firstClick.row, col: firstClick.col },
+                { row: secondClick.row, col: secondClick.col }
+            )) {
+                // 相邻则尝试交换
+                this.swapTiles(
+                    { row: firstClick.row, col: firstClick.col },
+                    { row: secondClick.row, col: secondClick.col }
+                );
             } else {
-                this.selectedTile.toggleSelected();
-                this.selectedTile = clickedTile;
-                clickedTile.toggleSelected();
+                // 不相邻则取消选中效果
+                firstClick.tile.toggleSelected();
+                secondClick.tile.toggleSelected();
             }
+
+            // 重置状态
+            this.resetClickState();
         }
+    }
+
+    private resetClickState(): void {
+        this.twoClickCounts = 0;
+        this.tilesClickedArray = [];
     }
 
     private async swapTiles(pos1: { row: number; col: number }, pos2: { row: number; col: number }): Promise<void> {
@@ -101,9 +122,11 @@ export class GameScene extends Phaser.Scene {
                 this.board[pos1.row][pos1.col] = tile1;
                 this.board[pos2.row][pos2.col] = tile2;
             }
+        }        // 取消两个方块的选中状态
+        if (tile1 && tile2) {
+            tile1.toggleSelected();
+            tile2.toggleSelected();
         }
-
-        this.selectedTile = null;
         this.isProcessing = false;
     }
 
