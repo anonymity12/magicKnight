@@ -237,7 +237,21 @@ export class GameScene extends Phaser.Scene {
                     this.board[newRow][col] = tile;
                     this.board[row][col] = null;
                     
-                    moves.push(this.animateTile(tile, { x: tile.x, y: newY }));
+                    // 创建完成动画后的回调，以更新方块的实际坐标
+                    const animationPromise = new Promise<void>((resolve) => {
+                        this.tweens.add({
+                            targets: tile,
+                            x: tile.x, // x保持不变
+                            y: newY,
+                            duration: 200,
+                            onComplete: () => {
+                                tile.y = newY; // 更新方块的实际Y坐标
+                                resolve();
+                            }
+                        });
+                    });
+                    
+                    moves.push(animationPromise);
                 }
             }
         }
