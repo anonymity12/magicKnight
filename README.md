@@ -7,6 +7,12 @@ use PhaserJs, and some AI help.
 
 
 # current UI
+
+![alt text](/assets/image3.png)
+
+0609 23:49: 完成fix： rz担心的三消bug
+
+## older UI
  
 ![alt text](/assets/image2.png)
 
